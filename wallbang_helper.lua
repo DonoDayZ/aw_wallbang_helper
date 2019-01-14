@@ -4,6 +4,7 @@ local WALK_SPEED = 100;
 local WB_ACTION_COOLDOWN = 30;
 local GAME_COMMAND_COOLDOWN = 40;
 local WALLBANG_SAVE_FILE_NAME = "wallbang_helper_data.dat";
+local MARKER_DISTANCE = 200;
 
 local maps = {}
 
@@ -17,13 +18,12 @@ local WB_DEL_KB = gui.Keybox(WB_NEW_WALLBANG_GB, "WB_DEL_KB", "Remove key", "");
 local WB_SETTINGS_GB = gui.Groupbox(WB_WINDOW, "Settings", 230, 15, 200, 150);
 local WB_HELPER_ENABLED = gui.Checkbox(WB_SETTINGS_GB, "WB_HELPER_ENABLED", "Enable Wallbang Helper", false);
 local WB_VISUALS_DISTANCE_SL = gui.Slider(WB_SETTINGS_GB, "WB_VISUALS_DISTANCE_SL", "Display Distance", 800, 1, 9999);
-local WB_VISUALS_MARKER_DISTANCE_SL = gui.Slider(WB_SETTINGS_GB, "WB_VISUALS_MARKER_DISTANCE_SL", "Marker Distance", 200, 1, 9999);
 
 local window_show = false;
 local window_cb_pressed = true;
 local last_action = globals.TickCount();
-local my_last_load = globals.TickCount();
 local screen_w, screen_h = 0, 0;
+local should_load_data = true;
 
 -- Just open up the file in append mode, should create the file if it doesn't exist and won't override anything if it does
 local my_file = file.Open(WALLBANG_SAVE_FILE_NAME, "a");
@@ -32,6 +32,11 @@ my_file:Close();
 local current_map_name;
 
 function drawEventHandler()
+    if (should_load_data) then
+        loadData();
+        should_load_data = false;
+    end
+
     showWindow();
 
     if (WB_HELPER_ENABLED:GetValue() == false) then
@@ -39,13 +44,6 @@ function drawEventHandler()
     end
 
     screen_w, screen_h = draw.GetScreenSize();
-    if (my_last_load ~= nil and my_last_load > globals.TickCount()) then
-        my_last_load = globals.TickCount();
-    end
-
-    if (globals.TickCount() - my_last_load > 150) then
-        loadData();
-    end
 
     local active_map_name = engine.GetMapName();
 
@@ -240,7 +238,7 @@ function showWallbangSpots()
 end
 
 function getWallbangPosition(pos_x, pos_y, pos_z, ax, ay, z_offset)
-    return pos_x - WB_VISUALS_MARKER_DISTANCE_SL:GetValue() * math.cos(math.rad(ay + 180)), pos_y - WB_VISUALS_MARKER_DISTANCE_SL:GetValue() * math.sin(math.rad(ay + 180)), pos_z - WB_VISUALS_MARKER_DISTANCE_SL:GetValue() * math.tan(math.rad(ax)) + z_offset;
+    return pos_x - MARKER_DISTANCE * math.cos(math.rad(ay + 180)), pos_y - MARKER_DISTANCE * math.sin(math.rad(ay + 180)), pos_z - MARKER_DISTANCE * math.tan(math.rad(ax)) + z_offset;
 end
 
 function getDistanceToTarget(my_x, my_y, my_z, t_x, t_y, t_z)
@@ -306,11 +304,21 @@ end
 
 function parseStringifiedTable(stringified_table)
     local new_map = {};
-    for i in string.gmatch(stringified_table, "([^;]*);") do
-        local matches = {};
-        string.gmatch(i, "(.*),")
 
-        for word in string.gmatch(i, "([^,]*)") do
+    local strings_to_parse = {};
+    -- Legacy support
+    for i in string.gmatch(stringified_table, "([^;]*);") do
+        table.insert(strings_to_parse, i);
+    end
+
+    for i in string.gmatch(stringified_table, "([^\n]*)\n") do
+        table.insert(strings_to_parse, i);
+    end
+
+    for i=1, #strings_to_parse do
+        local matches = {};
+
+        for word in string.gmatch(strings_to_parse[i], "([^,]*)") do
             table.insert(matches, word);
         end
 
@@ -335,7 +343,7 @@ function convertTableToDataString(object)
     for map_name, map in pairs(object) do
         for i, wallbang in ipairs(map) do
             if (wallbang ~= nil) then
-                converted = converted .. map_name .. ',' .. wallbang.x .. ',' .. wallbang.y .. ',' .. wallbang.z .. ',' .. wallbang.ax .. ',' .. wallbang.ay .. ';'
+                converted = converted .. map_name .. ',' .. wallbang.x .. ',' .. wallbang.y .. ',' .. wallbang.z .. ',' .. wallbang.ax .. ',' .. wallbang.ay .. '\n'
             end
         end
     end
