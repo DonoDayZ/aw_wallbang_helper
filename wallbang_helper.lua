@@ -8,13 +8,13 @@ local WALLBANG_SAVE_FILE_NAME = "wallbang_helper_data.dat";
 local maps = {}
 
 local WB_WINDOW_ACTIVE = gui.Checkbox(gui.Reference("VISUALS", "MISC", "Assistance"), "WB_WINDOW_ACTIVE", "Wallbang Helper", false);
-local WB_WINDOW = gui.Window("WB_WINDOW", "Wallbang Helper", 200, 200, 450, 150);
-local WB_NEW_WALLBANG_GB = gui.Groupbox(WB_WINDOW, "Add wallbang", 15, 15, 200, 100);
+local WB_WINDOW = gui.Window("WB_WINDOW", "Wallbang Helper", 200, 200, 450, 200);
+local WB_NEW_WALLBANG_GB = gui.Groupbox(WB_WINDOW, "Add wallbang", 15, 15, 200, 150);
 local WB_ENABLE_KEYBINDS = gui.Checkbox(WB_NEW_WALLBANG_GB, "WB_ENABLE_KEYBINDS", "Enable Add Keybinds", false);
 local WB_ADD_KB = gui.Keybox(WB_NEW_WALLBANG_GB, "WB_ADD_KB", "Add key", "");
 local WB_DEL_KB = gui.Keybox(WB_NEW_WALLBANG_GB, "WB_DEL_KB", "Remove key", "");
 
-local WB_SETTINGS_GB = gui.Groupbox(WB_WINDOW, "Settings", 230, 15, 200, 100);
+local WB_SETTINGS_GB = gui.Groupbox(WB_WINDOW, "Settings", 230, 15, 200, 150);
 local WB_HELPER_ENABLED = gui.Checkbox(WB_SETTINGS_GB, "WB_HELPER_ENABLED", "Enable Wallbang Helper", false);
 local WB_VISUALS_DISTANCE_SL = gui.Slider(WB_SETTINGS_GB, "WB_VISUALS_DISTANCE_SL", "Display Distance", 800, 1, 9999);
 local WB_VISUALS_MARKER_DISTANCE_SL = gui.Slider(WB_SETTINGS_GB, "WB_VISUALS_MARKER_DISTANCE_SL", "Marker Distance", 200, 1, 9999);
